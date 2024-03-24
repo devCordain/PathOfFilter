@@ -7,7 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
+    <None Remove="BaseItems\BasicCurrency.json" />
+    <None Remove="ItemTypes\BasicCurrency.json" />
+    <None Remove="ItemTypes\ItemType.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="BaseItems\BasicCurrency.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ItemTypes\BasicCurrency.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ItemTypes\ItemType.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

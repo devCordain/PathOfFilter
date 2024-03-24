@@ -1,0 +1,14 @@
+﻿[
+  {
+    "minimumStackSize": {
+      "type": "integer",
+      "required": false
+    }
+  },
+  {
+    "maximumStackSize": {
+      "type": "integer",
+      "required": false
+    }
+  }
+]

@@ -1,4 +1,4 @@
-﻿namespace PathOfFilter.Application.Contracts;
+﻿namespace PathOfFilter.Application.Items;
 
 internal interface IInherentQuality
 {
