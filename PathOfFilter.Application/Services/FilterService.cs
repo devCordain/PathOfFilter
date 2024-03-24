@@ -21,7 +21,7 @@ public class FilterService
 
         if (baseItems == null) return null;
 
-        var newFilter = new ItemFilter(existingFilter, command, baseItems);
+        var newFilter = new ItemFilter(existingFilter, loadedFilterItems, command, baseItems);
 
         await _storage.Save(existingFilter, newFilter);
 

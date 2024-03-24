@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 namespace PathOfFilter.Application.Services.Helpers;
-internal static class JsonExtensions
+internal static class LoadExtensions
 {
     internal static List<FilterItem> GetItems(this JsonDocument document, List<TypeDefinition> itemTypes)
     {
@@ -47,4 +47,18 @@ internal static class JsonExtensions
 
         return itemTypes;
     }
+
+    internal static string RemoveFilterComments(this string input) => input.Split('#')[0].Trim();
+    internal static bool IsNewFilterItem(this string input) => input.StartsWith("Show") || input.StartsWith("Hide");
+    internal static List<FilterItem> ToFilterItems(this Dictionary<string,string> input)
+    {
+        //Todo implement
+        return new List<FilterItem>();
+    }
+
+    internal static void AddToCurrentFilterItem(this string intpu, Dictionary<string, string> currentFilterItem)
+    {
+        //Todo implement
+    }
+
 }

@@ -24,12 +24,12 @@ public class FilterHandlerTests
     }
 
     [Fact]
-    public async void Loading_Pure_Filter()
+    public async void Loading_Filter()
     {
         var newFilter = await _sut.Create(null, null);
         Assert.NotNull(newFilter);
 
-        var loadedFilter = await _sut.Create(null, "load src pure");
+        var loadedFilter = await _sut.Create(null, "load src pure.filter");
         
         Assert.NotNull(loadedFilter);
         Assert.Equal(1, loadedFilter.Version);
@@ -38,16 +38,16 @@ public class FilterHandlerTests
     }
 
     [Fact] // Idk how i want this to work
-    public async void Loading_Existing_Filter()
+    public async void Loading_With_Existing_Filter()
     {
         var newFilter = await _sut.Create(null, null);
         Assert.NotNull(newFilter);
 
-        var loadedFilter = await _sut.Create(newFilter, "load src pure");
+        var loadedFilter = await _sut.Create(newFilter, "load src pure.filter");
 
         Assert.NotNull(loadedFilter);
         Assert.Equal(1, loadedFilter.Version);
-        Assert.Equal($"load", loadedFilter.Action);
+        Assert.Equal($"load", loadedFilter.LatestCommand);
         Assert.NotEqual(newFilter.Name, loadedFilter.Name);
         Assert.NotEqual(newFilter.Id, loadedFilter.Id);
     }

@@ -5,11 +5,11 @@ public class ItemFilter
     public Guid Id { get; set; }
     public string Name { get; set; }
     public int Version { get; set; }
-    public string Action { get; set; }
+    public string LatestCommand { get; set; }
 
     public List<FilterItem> Items { get; set; }
 
-    public ItemFilter(ItemFilter? oldFilter, FilterCommand? command, List<FilterItem> baseItems)
+    public ItemFilter(ItemFilter? oldFilter, List<FilterItem>? loadedItems, FilterCommand? command, List<FilterItem> baseItems)
     {
         if (oldFilter == null)
         {
@@ -23,29 +23,17 @@ public class ItemFilter
             return;
         }
 
-        if (oldFilter.Version == 0)
-        {
-            Id = Guid.NewGuid();
-            Version = 1;
-            Name = oldFilter.Name;
-            Items = Update(oldFilter.Items, baseItems);
-
-            ApplyCommand(command); 
-            
-            return;
-        }
-
         Id = oldFilter.Id;
-        Version = oldFilter.Version + 1;
+        Version = oldFilter.Version;
         Items = Update(oldFilter.Items, baseItems);
-        ApplyCommand(command);
+        LatestCommand = ApplyCommand(command);
     }
 
     public ItemFilter(string name, List<FilterItem> items) 
     {
         Items = items;
         Name = name;
-        Action = "load";
+        LatestCommand = "load";
     }
 
 
@@ -76,22 +64,18 @@ public class ItemFilter
         return items;
     }
 
-    private void ApplyCommand(FilterCommand? command)
+    private string ApplyCommand(FilterCommand? command)
     {
-        if (command == null) 
-        {
-            Action = "none";
-            return;
-        }
-
-        Action = command.Name;
-
+        if (command == null) return LatestCommand;
+        
         if (command.Name == "rename")
         {
             Name = command.Options["name"];
+            Version++;
         }
 
 
-        return;
+
+        return command.ToString();
     }
 }

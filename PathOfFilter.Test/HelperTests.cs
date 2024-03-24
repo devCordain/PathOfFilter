@@ -23,12 +23,8 @@ public class HelperTests
     [InlineData("", "")]
     public void WithoutFilterComments_RemovesComments(string input, string expected)
     {
-        // Arrange
+        var result = input.RemoveFilterComments();
 
-        // Act
-        var result = input.WithoutFilterComments();
-
-        // Assert
         Assert.Equal(expected, result);
     }
 }

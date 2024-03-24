@@ -30,55 +30,41 @@ public class LocalJsonStorageService : IStorage
 
         var items = new List<FilterItem>();
 
-        using (StreamReader sr = new StreamReader(filePath))
+        var currentObject = new Dictionary<string, string>();
+        using (StreamReader sr = new(filePath))
         {
             string line;
-            var currentObject = new Dictionary<string, string>();
             while ((line = sr.ReadLine()) != null)
             {
-                line = line.WithoutFilterComments();
+                line = line.RemoveFilterComments();
+                if (string.IsNullOrWhiteSpace(line)) continue;
 
-                // If the line is not empty after removing comments
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    // Split into objects based on "Show" or "Hide" keywords
-                    if (line.StartsWith("Show") || line.StartsWith("Hide"))
-                    {
-                        // If currentObject is not empty, add it to extractedData
-                        if (currentObject.Count > 0)
-                        {
-                            //items.Add(currentObject);
-                        }
-                        // Start a new object
-                        currentObject = new Dictionary<string, string>();
-                    }
-
-                    // Add the line to currentObject
-                    //currentObject.Add(line);
+                if (line.IsNewFilterItem() && currentObject.Any())
+                { 
+                    items.AddRange(currentObject.ToFilterItems());
+                    currentObject = new Dictionary<string, string>();
+                    continue;
                 }
-            }
 
-            // Add the last object to extractedData
-            if (currentObject.Count > 0)
-            {
-                //items.Add(currentObject);
+                line.AddToCurrentFilterItem(currentObject);
             }
         }
 
-        // TODO implement loading
-        return items;
+        if (currentObject.Any()) items.AddRange(currentObject.ToFilterItems());
 
+        return items;
     }
 
     public async Task<List<FilterItem>?> LoadBaseItems()
     {
-        var itemTypes = LoadItems("Data\\TypeDefinitions", document => document.GetTypeDefinitions());
+        var typeDefinitions = LoadItems("Data\\TypeDefinitions", document => document.GetTypeDefinitions());
 
-        if (itemTypes == null) return null;
+        if (typeDefinitions == null) return null;
 
-        return LoadItems("Data\\Items", document => document.GetItems(itemTypes));
+        return LoadItems("Data\\Items", document => document.GetItems(typeDefinitions));
     }
 
+    //Todo implement
     public async Task Save(ItemFilter? existingFilter, ItemFilter newFilter)
     {
         return;

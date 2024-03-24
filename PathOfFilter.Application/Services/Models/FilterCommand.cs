@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 namespace PathOfFilter.Application.Services.Models;
 
 public class FilterCommand
@@ -28,7 +30,9 @@ public class FilterCommand
 		catch (Exception e)
 		{
 			Console.WriteLine(e.Message);
-			return null;
-		}
+            return null;
+        }
     }
+
+    public override string ToString() => $"{Name} ({string.Join(" ", Options.Select(x => $"{x.Key} {x.Value}"))})";
 }
