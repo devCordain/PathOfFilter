@@ -8,10 +8,11 @@ public class FilterItem
     public Visual? Visual { get; set; }
     public Audio? Audio { get; set; }
     public LevelRange? ItemLevel { get; set; }
+    public LevelRange? ZoneLevel { get; set; }
     public Rarity? Rarity { get; set; }
     public bool Show { get; set; }
 
-    public FilterItem(string name, string category, List<string> itemTypes, Visual? visual = null, Audio? audio = null, LevelRange? itemLevel = null, Rarity? rarity = null, bool show = true)
+    public FilterItem(string name, string category, List<string> itemTypes, Visual? visual = null, Audio? audio = null, LevelRange? itemLevel = null, LevelRange? zoneLevel = null, Rarity? rarity = null, bool show = true)
     {
         Name = name;
         Category = category;
@@ -19,6 +20,7 @@ public class FilterItem
         Visual = visual;
         Audio = audio;
         ItemLevel = itemLevel;
+        ZoneLevel = zoneLevel;
         Rarity = rarity;
         Show = show;
     }

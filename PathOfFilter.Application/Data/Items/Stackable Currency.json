@@ -1,7 +1,7 @@
 ﻿{
-	"category": "Basic Currency",
+	"class": "Stackable Currency",
 	"types": [
-		"BasicCurrency"
+		"Stackable", "Named"
 	],
 	"items": [
 		{ "name": "Armourer's Scrap" },

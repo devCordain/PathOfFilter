@@ -12,10 +12,58 @@ public class LocalJsonStorageService : IStorage
 
         if (command.Name != "load") return null;
 
-        var fileName = command.Options["src"];
+        var filePath = command.Options["src"];
+
+        filePath = filePath.Trim();
+
+        if (!filePath.EndsWith(".filter"))
+        {
+            Console.WriteLine($"File {filePath} is not supported");
+            return null;
+        }
+
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine($"File {filePath} does not exist");
+            return null;
+        }
+
         var items = new List<FilterItem>();
 
+        using (StreamReader sr = new StreamReader(filePath))
+        {
+            string line;
+            var currentObject = new Dictionary<string, string>();
+            while ((line = sr.ReadLine()) != null)
+            {
+                line = line.WithoutFilterComments();
 
+                // If the line is not empty after removing comments
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    // Split into objects based on "Show" or "Hide" keywords
+                    if (line.StartsWith("Show") || line.StartsWith("Hide"))
+                    {
+                        // If currentObject is not empty, add it to extractedData
+                        if (currentObject.Count > 0)
+                        {
+                            //items.Add(currentObject);
+                        }
+                        // Start a new object
+                        currentObject = new Dictionary<string, string>();
+                    }
+
+                    // Add the line to currentObject
+                    //currentObject.Add(line);
+                }
+            }
+
+            // Add the last object to extractedData
+            if (currentObject.Count > 0)
+            {
+                //items.Add(currentObject);
+            }
+        }
 
         // TODO implement loading
         return items;
@@ -24,11 +72,11 @@ public class LocalJsonStorageService : IStorage
 
     public async Task<List<FilterItem>?> LoadBaseItems()
     {
-        var itemTypes = LoadItems("ItemTypes", document => document.GetItemTypeDefinitions());
+        var itemTypes = LoadItems("Data\\TypeDefinitions", document => document.GetTypeDefinitions());
 
         if (itemTypes == null) return null;
 
-        return LoadItems("BaseItems", document => document.GetItems(itemTypes));
+        return LoadItems("Data\\Items", document => document.GetItems(itemTypes));
     }
 
     public async Task Save(ItemFilter? existingFilter, ItemFilter newFilter)

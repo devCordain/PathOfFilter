@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PathOfFilter.Application.Services.Models;
-internal class ItemTypeDefinition
+internal class TypeDefinition
 {
     public string Name { get; set; }
     public List<ItemAttribute> Attributes { get; set; }

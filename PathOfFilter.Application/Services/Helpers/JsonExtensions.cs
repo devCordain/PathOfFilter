@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace PathOfFilter.Application.Services.Helpers;
 internal static class JsonExtensions
 {
-    internal static List<FilterItem> GetItems(this JsonDocument document, List<ItemTypeDefinition> itemTypes)
+    internal static List<FilterItem> GetItems(this JsonDocument document, List<TypeDefinition> itemTypes)
     {
         var items = new List<FilterItem>();
       
@@ -14,7 +14,7 @@ internal static class JsonExtensions
             {
                 items.Add(new FilterItem(
                     item.GetProperty("name").ToString(),
-                    document.RootElement.GetProperty("category").ToString(),
+                    document.RootElement.GetProperty("class").ToString(),
                     document.RootElement.GetProperty("types").EnumerateArray().Select(typeName => typeName.ToString()).ToList()
                     ));
             }
@@ -28,15 +28,15 @@ internal static class JsonExtensions
         return items;
     }
 
-    internal static List<ItemTypeDefinition> GetItemTypeDefinitions(this JsonDocument document)
+    internal static List<TypeDefinition> GetTypeDefinitions(this JsonDocument document)
     {
-        var itemTypes = new List<ItemTypeDefinition>();
+        var itemTypes = new List<TypeDefinition>();
 
         foreach (var itemType in document.RootElement.EnumerateArray())
         {
             try
             {
-                itemTypes.Add(JsonSerializer.Deserialize<ItemTypeDefinition>(itemType));
+                itemTypes.Add(JsonSerializer.Deserialize<TypeDefinition>(itemType));
             }
             catch (Exception)
             {

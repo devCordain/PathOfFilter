@@ -4,24 +4,31 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="BaseItems\BasicCurrency.json" />
-    <None Remove="ItemTypes\BasicCurrency.json" />
-    <None Remove="ItemTypes\ItemType.json" />
+    <None Remove="Data\Items\Stackable Currency.json" />
+    <None Remove="Data\TypeDefinitions\Named.json" />
+    <None Remove="Data\TypeDefinitions\Stackable.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="BaseItems\BasicCurrency.json">
+    <Content Include="Data\Items\Stackable Currency.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="ItemTypes\BasicCurrency.json">
+    <Content Include="Data\TypeDefinitions\Stackable.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="ItemTypes\ItemType.json">
+    <Content Include="Data\TypeDefinitions\Named.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>PathOfFilter.Test</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>
