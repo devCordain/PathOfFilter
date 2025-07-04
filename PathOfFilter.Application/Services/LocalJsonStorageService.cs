@@ -64,10 +64,198 @@ public class LocalJsonStorageService : IStorage
         return LoadItems("Data\\Items", document => document.GetItems(typeDefinitions));
     }
 
-    //Todo implement
     public async Task Save(ItemFilter? existingFilter, ItemFilter newFilter)
     {
-        return;
+        var cacheBasePath = Path.Combine(Directory.GetCurrentDirectory(), "cache");
+        var filterPath = Path.Combine(cacheBasePath, newFilter.Id.ToString());
+        var versionPath = Path.Combine(filterPath, newFilter.Version.ToString());
+
+        if (!Directory.Exists(versionPath))
+        {
+            Directory.CreateDirectory(versionPath);
+        }
+
+        var jsonPath = Path.Combine(versionPath, "filter.json");
+        var filterFilePath = Path.Combine(versionPath, "filter.filter");
+
+        var filterMetadata = new
+        {
+            Id = newFilter.Id,
+            Name = newFilter.Name,
+            Version = newFilter.Version,
+            LatestCommand = newFilter.LatestCommand,
+            Timestamp = DateTime.UtcNow,
+            Items = newFilter.Items
+        };
+
+        var jsonContent = JsonSerializer.Serialize(filterMetadata, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(jsonPath, jsonContent);
+
+        var filterContent = GenerateFilterFile(newFilter);
+        await File.WriteAllTextAsync(filterFilePath, filterContent);
+
+        Console.WriteLine($"Saved filter '{newFilter.Name}' version {newFilter.Version} to cache");
+    }
+
+    private string GenerateFilterFile(ItemFilter filter)
+    {
+        var filterContent = new System.Text.StringBuilder();
+        filterContent.AppendLine($"# Filter: {filter.Name}");
+        filterContent.AppendLine($"# Version: {filter.Version}");
+        filterContent.AppendLine($"# Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        filterContent.AppendLine();
+
+        var groupedItems = filter.Items.GroupBy(item => new { item.Show, item.Continue });
+
+        foreach (var group in groupedItems)
+        {
+            var action = group.Key.Show ? "Show" : "Hide";
+            filterContent.AppendLine(action);
+
+            var classItems = group.Where(item => !string.IsNullOrEmpty(item.Category)).ToList();
+            if (classItems.Any())
+            {
+                var classes = string.Join(" ", classItems.Select(item => $"\"{item.Category}\"").Distinct());
+                filterContent.AppendLine($"    Class == {classes}");
+            }
+
+            var baseTypeItems = group.Where(item => !string.IsNullOrEmpty(item.Name)).ToList();
+            if (baseTypeItems.Any())
+            {
+                var baseTypes = string.Join(" ", baseTypeItems.Select(item => $"\"{item.Name}\"").Distinct());
+                filterContent.AppendLine($"    BaseType == {baseTypes}");
+            }
+
+            if (group.Key.Continue)
+            {
+                filterContent.AppendLine("    Continue");
+            }
+
+            filterContent.AppendLine();
+        }
+
+        return filterContent.ToString();
+    }
+
+    public List<ItemFilter> LoadFilterHistory(Guid filterId)
+    {
+        var cacheBasePath = Path.Combine(Directory.GetCurrentDirectory(), "cache");
+        var filterPath = Path.Combine(cacheBasePath, filterId.ToString());
+
+        if (!Directory.Exists(filterPath))
+        {
+            return new List<ItemFilter>();
+        }
+
+        var versions = new List<ItemFilter>();
+        var versionDirs = Directory.GetDirectories(filterPath)
+            .Select(dir => new DirectoryInfo(dir))
+            .Where(dirInfo => int.TryParse(dirInfo.Name, out _))
+            .OrderBy(dirInfo => int.Parse(dirInfo.Name));
+
+        foreach (var versionDir in versionDirs)
+        {
+            var jsonPath = Path.Combine(versionDir.FullName, "filter.json");
+            if (File.Exists(jsonPath))
+            {
+                try
+                {
+                    var jsonContent = File.ReadAllText(jsonPath);
+                    var filterData = JsonSerializer.Deserialize<JsonElement>(jsonContent);
+                    
+                    var filter = new ItemFilter(
+                        filterData.GetProperty("Name").GetString() ?? "Unknown",
+                        filterData.GetProperty("Items").Deserialize<List<FilterItem>>() ?? new List<FilterItem>()
+                    );
+
+                    versions.Add(filter);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to load filter version {versionDir.Name}: {ex.Message}");
+                }
+            }
+        }
+
+        return versions;
+    }
+
+    public ItemFilter? LoadFilterVersion(Guid filterId, int version)
+    {
+        var cacheBasePath = Path.Combine(Directory.GetCurrentDirectory(), "cache");
+        var versionPath = Path.Combine(cacheBasePath, filterId.ToString(), version.ToString());
+        var jsonPath = Path.Combine(versionPath, "filter.json");
+
+        if (!File.Exists(jsonPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var jsonContent = File.ReadAllText(jsonPath);
+            var filterData = JsonSerializer.Deserialize<JsonElement>(jsonContent);
+            
+            var filter = new ItemFilter(
+                filterData.GetProperty("Name").GetString() ?? "Unknown",
+                filterData.GetProperty("Items").Deserialize<List<FilterItem>>() ?? new List<FilterItem>()
+            );
+
+            return filter;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load filter version {version}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public List<(Guid Id, string Name, int LatestVersion)> ListCachedFilters()
+    {
+        var cacheBasePath = Path.Combine(Directory.GetCurrentDirectory(), "cache");
+        var cachedFilters = new List<(Guid Id, string Name, int LatestVersion)>();
+
+        if (!Directory.Exists(cacheBasePath))
+        {
+            return cachedFilters;
+        }
+
+        var filterDirs = Directory.GetDirectories(cacheBasePath)
+            .Select(dir => new DirectoryInfo(dir))
+            .Where(dirInfo => Guid.TryParse(dirInfo.Name, out _));
+
+        foreach (var filterDir in filterDirs)
+        {
+            var filterId = Guid.Parse(filterDir.Name);
+            var versionDirs = Directory.GetDirectories(filterDir.FullName)
+                .Select(dir => new DirectoryInfo(dir))
+                .Where(dirInfo => int.TryParse(dirInfo.Name, out _))
+                .OrderByDescending(dirInfo => int.Parse(dirInfo.Name));
+
+            var latestVersionDir = versionDirs.FirstOrDefault();
+            if (latestVersionDir != null)
+            {
+                var jsonPath = Path.Combine(latestVersionDir.FullName, "filter.json");
+                if (File.Exists(jsonPath))
+                {
+                    try
+                    {
+                        var jsonContent = File.ReadAllText(jsonPath);
+                        var filterData = JsonSerializer.Deserialize<JsonElement>(jsonContent);
+                        var name = filterData.GetProperty("Name").GetString() ?? "Unknown";
+                        var version = int.Parse(latestVersionDir.Name);
+
+                        cachedFilters.Add((filterId, name, version));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to read filter {filterId}: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        return cachedFilters.OrderBy(f => f.Name).ToList();
     }
 
     private List<T>? LoadItems<T>(string directoryKey, Func<JsonDocument, List<T>> getItemFunc)

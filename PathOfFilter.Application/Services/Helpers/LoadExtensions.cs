@@ -62,40 +62,59 @@ internal static class LoadExtensions
         var baseTypeValues = input.ContainsKey("BaseType") ? input["BaseType"] : null;
         var rarities = input.ContainsKey("Rarity") ? input["Rarity"] : null;
 
+        // Handle Class conditions
         if (classValues != null)
         {
             var classes = classValues.Split(' ');
-            var @operator = classes[0];
-
-            if (@operator != "==") 
+            if (classes.Length > 1)
             {
-                Console.WriteLine($"Wierd operator detected {@operator}");
-
-                return items;
-            }
-
-            for (var i = 1; i < classes.Length; i++ ) 
-            {
-                items.Add(new FilterItem("", classes[i], new(), show: show, @continue: @continue));
+                var @operator = classes[0];
+                if (@operator == "==")
+                {
+                    for (var i = 1; i < classes.Length; i++)
+                    {
+                        items.Add(new FilterItem("", classes[i], new(), show: show, @continue: @continue));
+                    }
+                }
             }
         }
 
+        // Handle BaseType conditions
         if (baseTypeValues != null)
         {
             var baseTypes = baseTypeValues.Split(' ');
-            var @operator = baseTypes[0];
-
-            if (@operator != "==")
+            if (baseTypes.Length > 1)
             {
-                Console.WriteLine($"Wierd operator detected {@operator}");
-
-                return items;
+                var @operator = baseTypes[0];
+                if (@operator == "==")
+                {
+                    for (var i = 1; i < baseTypes.Length; i++)
+                    {
+                        items.Add(new FilterItem(baseTypes[i], "", new(), show: show, @continue: @continue));
+                    }
+                }
             }
+        }
 
-            for (var i = 1; i < baseTypes.Length; i++)
+        // If no specific conditions were parsed, create a generic filter item
+        // This prevents losing filter blocks that have conditions we don't fully parse yet
+        if (items.Count == 0)
+        {
+            var description = "Filter Block";
+            if (classValues != null) description += $" (Class: {classValues})";
+            if (baseTypeValues != null) description += $" (BaseType: {baseTypeValues})";
+            
+            // Add other common conditions for description
+            foreach (var kvp in input)
             {
-                items.Add(new FilterItem(baseTypes[i], "", new(), show: show, @continue: @continue));
+                if (kvp.Key != "Show" && kvp.Key != "Hide" && kvp.Key != "Continue" && 
+                    kvp.Key != "Class" && kvp.Key != "BaseType")
+                {
+                    description += $" ({kvp.Key}: {kvp.Value})";
+                }
             }
+            
+            items.Add(new FilterItem(description, "FilterBlock", new(), show: show, @continue: @continue));
         }
 
         return items;
@@ -107,7 +126,19 @@ internal static class LoadExtensions
 
         if (parts.Length == 0) return;
 
-        currentFilterItem.Add(parts[0], string.Join(" ", parts, 1, parts.Length - 1));
+        var key = parts[0];
+        var value = string.Join(" ", parts, 1, parts.Length - 1);
+
+        // Handle duplicate keys by appending to existing value or creating new entry
+        if (currentFilterItem.ContainsKey(key))
+        {
+            // For conditions that can have multiple values, append them
+            currentFilterItem[key] = currentFilterItem[key] + " | " + value;
+        }
+        else
+        {
+            currentFilterItem[key] = value;
+        }
     }
 
 }
