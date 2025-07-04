@@ -52,13 +52,62 @@ internal static class LoadExtensions
     internal static bool IsNewFilterItem(this string input) => input.StartsWith("Show") || input.StartsWith("Hide");
     internal static List<FilterItem> ToFilterItems(this Dictionary<string,string> input)
     {
-        //Todo implement
-        return new List<FilterItem>();
+        var items = new List<FilterItem>();
+
+        if (!input.ContainsKey("Show") && !input.ContainsKey("Hide")) return items;
+
+        var show = input.ContainsKey("Show");
+        var @continue = input.ContainsKey("Continue");
+        var classValues = input.ContainsKey("Class") ? input["Class"] : null;
+        var baseTypeValues = input.ContainsKey("BaseType") ? input["BaseType"] : null;
+        var rarities = input.ContainsKey("Rarity") ? input["Rarity"] : null;
+
+        if (classValues != null)
+        {
+            var classes = classValues.Split(' ');
+            var @operator = classes[0];
+
+            if (@operator != "==") 
+            {
+                Console.WriteLine($"Wierd operator detected {@operator}");
+
+                return items;
+            }
+
+            for (var i = 1; i < classes.Length; i++ ) 
+            {
+                items.Add(new FilterItem("", classes[i], new(), show: show, @continue: @continue));
+            }
+        }
+
+        if (baseTypeValues != null)
+        {
+            var baseTypes = baseTypeValues.Split(' ');
+            var @operator = baseTypes[0];
+
+            if (@operator != "==")
+            {
+                Console.WriteLine($"Wierd operator detected {@operator}");
+
+                return items;
+            }
+
+            for (var i = 1; i < baseTypes.Length; i++)
+            {
+                items.Add(new FilterItem(baseTypes[i], "", new(), show: show, @continue: @continue));
+            }
+        }
+
+        return items;
     }
 
-    internal static void AddToCurrentFilterItem(this string intpu, Dictionary<string, string> currentFilterItem)
+    internal static void AddToCurrentFilterItem(this string input, Dictionary<string, string> currentFilterItem)
     {
-        //Todo implement
+        var parts = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0) return;
+
+        currentFilterItem.Add(parts[0], string.Join(" ", parts, 1, parts.Length - 1));
     }
 
 }

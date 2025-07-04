@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PathOfFilter.Application.Services.Models;
+﻿namespace PathOfFilter.Application.Services.Models;
 internal class TypeDefinition
 {
     public string Name { get; set; }

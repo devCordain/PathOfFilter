@@ -11,8 +11,9 @@ public class FilterItem
     public LevelRange? ZoneLevel { get; set; }
     public Rarity? Rarity { get; set; }
     public bool Show { get; set; }
+    public bool Continue {  get; set; }
 
-    public FilterItem(string name, string category, List<string> itemTypes, Visual? visual = null, Audio? audio = null, LevelRange? itemLevel = null, LevelRange? zoneLevel = null, Rarity? rarity = null, bool show = true)
+    public FilterItem(string name, string category, List<string> itemTypes, Visual? visual = null, Audio? audio = null, LevelRange? itemLevel = null, LevelRange? zoneLevel = null, Rarity? rarity = null, bool show = true, bool @continue = false)
     {
         Name = name;
         Category = category;
@@ -23,5 +24,6 @@ public class FilterItem
         ZoneLevel = zoneLevel;
         Rarity = rarity;
         Show = show;
+        Continue = @continue;
     }
 }

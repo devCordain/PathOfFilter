@@ -1,7 +1,4 @@
-﻿
-using System.Collections.Generic;
-
-namespace PathOfFilter.Application.Services.Models;
+﻿namespace PathOfFilter.Application.Services.Models;
 
 public class FilterCommand
 {
